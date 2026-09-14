@@ -26,7 +26,7 @@ def load_tile(z,tx,ty):
     im=Image.open(p).convert('RGB') if os.path.exists(p) else Image.new('RGB',(TILE,TILE),(233,232,215))
     tiles_done[k]=im;return im
 for z in ZOOMS:
-    s=2**(z-17);ss=4 if z<=17 else 3
+    s=2**(z-17);ss=4 if z<=17 else (3 if z<=19 else 2)
     for garden in GARDENS:
         encl=encl_geo[garden];gid=encl['properties']['garden_id']
         # extent in tile px
@@ -37,6 +37,7 @@ for z in ZOOMS:
         pad=12*s+4
         for tx,ty in tiles_for_pixel_bbox(z,min(us)-pad,min(vs)-pad,max(us)+pad,max(vs)+pad):
             ox,oy=tx*TILE,ty*TILE
+            if not os.path.exists(tile_path(z,tx,ty)) and tile_key(z,tx,ty) not in tiles_done:continue
             orig=load_tile(z,tx,ty)
             res=render_garden_tile(garden,z,tx,ty,orig,ss)
             # inpaint region: OSM garden polygon + superseded path strips, minus enclosure
@@ -88,8 +89,14 @@ for z in ZOOMS:
                 arr=arr*(1-a[:,:,None])+np.array(new).astype(np.float32)*a[:,:,None]
             im=Image.fromarray(np.clip(arr,0,255).astype(np.uint8))
             tiles_done[tile_key(z,tx,ty)]=im
-# write out
+# write out (processed tiles) and copy every untouched source tile so OUT is a complete pyramid
+import glob,shutil
 n=0
+for src in glob.glob(ROOT+'/*/*/*.png')+glob.glob(ROOT+'/*/*/*.webp'):
+    rel=os.path.relpath(src,ROOT);k=rel.rsplit('.',1)[0]
+    if k in tiles_done:continue
+    dst=os.path.join(OUT,k+'.png');os.makedirs(os.path.dirname(dst),exist_ok=True)
+    Image.open(src).convert('RGB').save(dst,'PNG')
 for k,im in tiles_done.items():
-    p=os.path.join(OUT,k+'.webp');os.makedirs(os.path.dirname(p),exist_ok=True);im.save(p,'WEBP',quality=88,method=6);n+=1
+    p=os.path.join(OUT,k+'.png');os.makedirs(os.path.dirname(p),exist_ok=True);im.save(p,'PNG');n+=1
 print('tiles written',n)

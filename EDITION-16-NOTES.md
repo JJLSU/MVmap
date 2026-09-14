@@ -19,3 +19,7 @@ All 268 ground tiles were re-graded: gamma 1.22, saturation 1.18, contrast 1.22,
 - `dist/app.js`, `dist/style.css`, `dist/index.html`: places, tap cards, phone layout, edition label and notes.
 - `dist/baked/tiles/`: graded tiles.
 - `source/grade.py`: the grading curve, runnable against any tile directory.
+
+## 16.1
+
+A stray rendered object sat on the lawn triangle north of the parkway roundabout (around 38.71191 N, 77.08591 W) at every zoom from 16 to 19. It is painted out. The object is still in the Blender scene; find it near that position and delete it before the next bake. All tiles also received a light unsharp mask (radius 1.2 px, amount 0.6) and are saved at WebP quality 90, which sharpens edges at zoom 20 and above without adding halos. Tile revision `ed16-1`.

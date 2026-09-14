@@ -20,8 +20,11 @@ def to_pixel(lon,lat,z):
     x,y=project(lon,lat);s=2**(z-17);return (x*s,-y*s)
 def from_pixel(u,v,z):
     s=2**(z-17);return unproject(u/s,-v/s)
-TILE=512;ROOT='/home/claude/mv/dist/baked/tiles'
-def tile_path(z,tx,ty): return f'{ROOT}/{z}/{tx}/{ty}.webp'
+import os
+TILE=512;ROOT=os.environ.get('TILES_ROOT','/home/claude/mv/dist/baked/tiles')
+def tile_path(z,tx,ty):
+    p=f'{ROOT}/{z}/{tx}/{ty}.png'
+    return p if os.path.exists(p) else f'{ROOT}/{z}/{tx}/{ty}.webp'
 def tiles_for_pixel_bbox(z,u0,v0,u1,v1):
     return [(tx,ty) for tx in range(math.floor(u0/TILE),math.floor(u1/TILE)+1) for ty in range(math.floor(v0/TILE),math.floor(v1/TILE)+1)]
 def mosaic(z,u0,v0,u1,v1):
